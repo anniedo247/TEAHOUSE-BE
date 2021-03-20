@@ -9,7 +9,7 @@ const mongoURI = process.env.MONGODB_URI
 
 var indexRouter = require('./routes/index');
 
-const utilsHepler = require("./helper/utils.helper")
+const utilsHelper = require("./helpers/utils.helper")
 var app = express();
 
 app.use(logger('dev'));
