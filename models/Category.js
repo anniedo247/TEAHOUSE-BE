@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const categorySchema = Schema(
   {
-    name: { type: String, required: true, trim: true },
-    subcategories:[{type: Schema.Types.ObjectId, ref:"Subcategory"}],
+    name: { type: String, required: true, trim: true ,lowercase: true},
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }

@@ -4,13 +4,14 @@ const productSchema = Schema(
   {
     name: { type: String, required: true, trim: true },
     description: { type: String, required: true },
-    instruction: String,
-    size:{type: String, enum:["small","medium","large"]},
+    ingredients: String,
+    instructions: String,
+    weight: Number,
     price: { type: Number, required: true },
     images: [{ type: String, required: true }],
     categories: [{ type: Schema.Types.ObjectId, ref: "Category" }],
-    subcategories:[{type: Schema.Types.ObjectId, ref:"Subcategory"}],
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
+    isFavorite:{type: Boolean, default: false},
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }

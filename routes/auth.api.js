@@ -7,4 +7,5 @@ const authController = require("../controllers/auth.controller");
  * @access Public
  */
 router.post("/login", authController.loginWithEmail)
+
 module.exports = router;

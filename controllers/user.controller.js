@@ -81,7 +81,7 @@ userController.updateProfile = async (req, res, next) => {
     next(error);
   }
 };
-//Get order of current user
+//Get current user
 userController.getCurrentUser = async (req, res, next) => {
   try {
     const userId = req.userId;
