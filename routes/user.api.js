@@ -11,6 +11,13 @@ const authMiddlewares = require("../middlewares/authentication")
  */
 router.post("/",userController.register)
 /**
+ * @route GET api/users
+ * @description Admin can get all users
+ * @access Admin required
+ */
+router.get("/",authMiddlewares.loginRequired,authMiddlewares.adminRequired,userController.getAllUsers)
+
+/**
  * @route GET api/users/me
  * @description Return current user info
  * @access Login required

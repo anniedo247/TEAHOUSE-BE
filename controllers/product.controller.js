@@ -58,51 +58,84 @@ productController.getAllProducts = async (req, res, next) => {
 
     const totalPages = Math.ceil(totalProducts / limit);
     const offset = limit * (page - 1);
-    // let products = await Product.find({ name: new RegExp(req.query.title,"i") })
-    //   .skip(offset)
-    //   .limit(limit)
-    //   .populate("categories")
-    //   .lean();
-    // console.log("category", req.query.category);
-    // const categoryName = req.query.category.split(",");
-    // const categoryArray = [];
+    
+    console.log("category", req.query.category);
 
-    // for (let i = 0; i < categoryName.length; i++) {
-    //   const category = await Category.findOne({ name: categoryName[i] }).lean();
-    //   console.log("jejej", category._id);
-    //   categoryArray.push(category._id);
-    // }
-    const products = await Product.aggregate([
-      {
-        $match: {
-          $and: [
-            { name: new RegExp(req.query.search, "i") },
-            { categories: { $all: categoryArray } },
-          ],
-        },
-      },
-      { $skip: offset },
-      { $limit: limit },
-      {
-        $lookup: {
-          from: "reviews",
-          localField: "reviews",
-          foreignField: "_id",
-          as: "reviews",
-        },
-      },
-      {
-        $lookup: {
-          from: "categories",
-          localField: "categories",
-          foreignField: "_id",
-          as: "categories",
-        },
-      },
+    let categoryArray = [];
 
-      { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
-    ]);
+    if (req.query.category) {
+      const categoryName = req.query.category.split(",");
 
+      for (let i = 0; i < categoryName.length; i++) {
+        const category = await Category.findOne({
+          name: categoryName[i],
+        }).lean();
+        console.log("jejej", category._id);
+        categoryArray.push(category._id);
+      }
+    }
+
+    let products;
+    if (categoryArray.length === 0) {
+      products = await Product.aggregate([
+        {
+          $match: {
+            name: new RegExp(req.query.search, "i"),
+          },
+        },
+        { $skip: offset },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "reviews",
+            localField: "reviews",
+            foreignField: "_id",
+            as: "reviews",
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "categories",
+            foreignField: "_id",
+            as: "categories",
+          },
+        },
+
+        { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
+      ]);
+    } else {
+      products = await Product.aggregate([
+        {
+          $match: {
+            $and: [
+              { name: new RegExp(req.query.search, "i") },
+              { categories: { $all: categoryArray } },
+            ],
+          },
+        },
+        { $skip: offset },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "reviews",
+            localField: "reviews",
+            foreignField: "_id",
+            as: "reviews",
+          },
+        },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "categories",
+            foreignField: "_id",
+            as: "categories",
+          },
+        },
+
+        { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
+      ]);
+    }
     utilsHelper.sendResponse(
       res,
       200,
@@ -124,6 +157,7 @@ productController.updateProduct = async (req, res, next) => {
       description,
       ingredients,
       instructions,
+      weight,
       price,
       images,
       categories,
@@ -136,9 +170,10 @@ productController.updateProduct = async (req, res, next) => {
     }
     if (product) {
       (product.name = name || product.name),
-        (product.description = description || product.description);
+      (product.description = description || product.description);
       product.ingredients = ingredients || product.ingredients;
       product.instructions = instructions || product.instructions;
+      product.weight = weight || product.weight;
       product.price = price || product.price;
       product.images = images || product.images;
       product.categories = categories || product.categories;
@@ -160,12 +195,7 @@ productController.updateProduct = async (req, res, next) => {
 productController.getSingleProduct = async (req, res, next) => {
   try {
     const productId = req.params.id;
-    // let product = await Product.findOne({ _id: productId });
-    // if (!product) {
-    //   return next(new Error("Product not found"));
-    // }
-    // await product.populate("categories").populate("reviews");
-    // await product.execPopulate();
+    
     console.log("productId", productId);
     const product = await Product.aggregate([
       { $match: { _id: mongoose.Types.ObjectId(productId) } },
@@ -179,11 +209,15 @@ productController.getSingleProduct = async (req, res, next) => {
       },
       { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
     ]);
+    const productData = await Product.findById(productId).populate("categories").populate({
+      path: "reviews",
+      populate: { path: "user", select: "name -_id" },
+    });
     utilsHelper.sendResponse(
       res,
       200,
       true,
-      { product },
+      { avgRating: product[0].avgRating, productData },
       null,
       "Get detail of single product success"
     );
@@ -223,9 +257,8 @@ productController.addFavoriteProduct = async (req, res, next) => {
     if (!product) {
       return next(new Error("Product not found or User not authorized"));
     }
-    if(product.isFavorite===true) {
+    if (product.isFavorite === true) {
       return next(new Error("Product already added to favorite"));
-
     }
     utilsHelper.sendResponse(
       res,
@@ -266,6 +299,7 @@ productController.removeFavoriteProduct = async (req, res, next) => {
 // get all favorite products
 productController.getAllFavoriteProducts = async (req, res, next) => {
   try {
+    console.log("test");
     let { page, limit, sortBy, ...filter } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
@@ -274,24 +308,23 @@ productController.getAllFavoriteProducts = async (req, res, next) => {
 
     const totalPages = Math.ceil(totalProducts / limit);
     const offset = limit * (page - 1);
-    let products = await Product.find({isFavorite:true})
-      .skip(offset)
-      .limit(limit)
-     
-    // products = await Product.aggregate([
-    //   { $skip: offset },
-    //   { $limit: limit },
-    //   {
-    //     $lookup: {
-    //       from: "reviews",
-    //       localField: "reviews",
-    //       foreignField: "_id",
-    //       as: "reviews",
-    //     },
-    //   },
+    //let products = await Product.find({isFavorite: true});
 
-    //   { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
-    // ]);
+    const products = await Product.aggregate([
+      {$match:{isFavorite:true}},
+      { $skip: offset },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "reviews",
+          localField: "reviews",
+          foreignField: "_id",
+          as: "reviews",
+        },
+      },
+
+      { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
+    ]);
 
     utilsHelper.sendResponse(
       res,

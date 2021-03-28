@@ -81,24 +81,7 @@ userController.updateProfile = async (req, res, next) => {
     next(error);
   }
 };
-//Get current user
-userController.getCurrentUser = async (req, res, next) => {
-  try {
-    const userId = req.userId;
-    const user = await User.findById(userId);
-    if (!user) return next(new Error("401 - User not found"));
-    utilsHelper.sendResponse(
-      res,
-      200,
-      true,
-      { user },
-      null,
-      "Get current user success"
-    );
-  } catch (error) {
-    next(error);
-  }
-};
+
 //Get order of current user
 userController.getCurrentUserOrder = async (req, res, next) => {
   try {

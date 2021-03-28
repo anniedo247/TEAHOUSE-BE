@@ -147,7 +147,7 @@ orderController.getAllOrders = async (req, res, next) => {
     const totalPages = Math.ceil(totalOrders / limit);
     const offset = limit * (page - 1);
 
-    const orders = await Order.find({isDeleted:false})
+    const orders = await Order.find({})
       .skip(offset)
       .limit(limit)
       .populate("userId");

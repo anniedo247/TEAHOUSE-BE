@@ -7,6 +7,7 @@ reviewController.createReview = async (req, res, next) => {
   try {
     const user= req.userId;
     const {productId, title,body,rating} = req.body;
+    console.log("body",req.body)
 
     let review = await Review.findOne({user, product: productId})
     if(review) {
