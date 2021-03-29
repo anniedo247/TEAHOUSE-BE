@@ -9,6 +9,7 @@ const userSchema = Schema(
     email: { type: String, required: true, unique: true, trim: true, lowercase : true },
     password: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    avatarUrl:String,
     balance: { type: Number, default: 0 },
     isDeleted: { type: Boolean, default: false },
   },

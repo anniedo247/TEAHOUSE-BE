@@ -53,10 +53,7 @@ userController.getCurrentUser = async (req, res, next) => {
 userController.updateProfile = async (req, res, next) => {
   try {
     const userId = req.userId;
-    let { name, password } = req.body;
-
-    const salt = await bcrypt.genSalt(10);
-    password = await bcrypt.hash(password, salt);
+    let { name, avatarUrl} = req.body;
 
     const user = await User.findById(userId)
     if (!user) {
@@ -64,9 +61,7 @@ userController.updateProfile = async (req, res, next) => {
     }
     if(user){
       user.name = name || user.name;
-      if(password){
-        user.password = password;
-      }
+      user.avatarUrl = avatarUrl || user.avatarUrl
     }
     const updatedUser = await user.save()
     utilsHelper.sendResponse(
@@ -95,7 +90,7 @@ userController.getCurrentUserOrder = async (req, res, next) => {
     const totalPages = Math.ceil(totalOrders / limit);
     const offset = limit * (page - 1);
     //current user
-    const currentUserId = req.params.id;
+    const currentUserId = req.userId;
     const currentUser = await User.findById(currentUserId);
 
     //target user

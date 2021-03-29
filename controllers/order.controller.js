@@ -46,8 +46,8 @@ orderController.createOrder = async (req, res, next) => {
         productList.push(product);
       }
     }
-    totalBe += totalBeforeCharge + deliveryCharge;
-    console.log("totalBe", totalBe);
+    totalBe = totalBeforeCharge + deliveryCharge;
+    console.log("totalBe", deliveryCharge);
     if (totalBe !== total)
       return next(new Error("401 - Total price is not correct"));
     const order = await Order.create({
@@ -135,7 +135,36 @@ orderController.deleteOrder = async (req, res, next) => {
     next(error);
   }
 };
+orderController.getMyOrders = async (req, res, next) => {
+  try {
+    let { page, limit, sortBy, ...filter } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
 
+    const totalOrders = await Order.count({ ...filter, isDeleted: false });
+
+    const totalPages = Math.ceil(totalOrders / limit);
+    const offset = limit * (page - 1);
+    
+    const userId = req.userId;
+    const orders = await Order.find({user: userId})
+      .skip(offset)
+      .limit(limit)
+      
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { orders, totalPages },
+      null,
+      `Get all ${orders.length} orders success`
+    );
+
+  }catch (error) {
+    next(error);
+
+  }
+}
 orderController.getAllOrders = async (req, res, next) => {
   try {
     let { page, limit, sortBy, ...filter } = req.query;
