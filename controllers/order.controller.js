@@ -13,33 +13,35 @@ orderController.createOrder = async (req, res, next) => {
       shippingAddress,
       total,
       deliveryCharge,
-    } = req.body;
+    } = req.body.order;
     if (products && products.length === 0) {
       return next(new Error("No products added."));
     }
     const productList = [];
-    console.log(req.body.products);
+    console.log("heheh",products);
     let totalBeforeCharge = 0;
     let totalBe = 0;
-    for (let item of products) {
-      if (item.quantity < 1) return next(new Error("401 - Invalid quantity."));
-      let product = await Product.findById(item.id).lean();
+    for (let i=0;i< products.length;i++) {
+      // if (products[i].quantity < 1) return next(new Error("401 - Invalid quantity."));
+      console.log("iddd",products[i].id)
+      let product = await Product.findById(products[i].id).lean();
 
+      console.log("product",product)
       if (product) {
-        product.quantity = item.quantity;
-        if (item.size) {
-          product.size = item.size;
-          if (item.size === "small") {
-            totalBeforeCharge += item.quantity * product.price;
+        product.quantity = products[i].quantity;
+        if (products[i].size) {
+          product.size = products[i].size;
+          if (products[i].size === "small") {
+            totalBeforeCharge += products[i].quantity * product.price;
           }
-          if (item.size === "medium") {
-            totalBeforeCharge += item.quantity * (product.price + 5000);
+          if (products[i].size === "medium") {
+            totalBeforeCharge += products[i].quantity * (product.price + 5000);
           }
-          if (item.size === "large") {
-            totalBeforeCharge += item.quantity * (product.price + 10000);
+          if (products[i].size === "large") {
+            totalBeforeCharge += products[i].quantity * (product.price + 10000);
           }
         } else {
-          totalBeforeCharge += item.quantity * product.price;
+          totalBeforeCharge += products[i].quantity * product.price;
         }
 
         console.log("kflakfo", totalBeforeCharge);
@@ -47,7 +49,8 @@ orderController.createOrder = async (req, res, next) => {
       }
     }
     totalBe = totalBeforeCharge + deliveryCharge;
-    console.log("totalBe", deliveryCharge);
+    console.log("before",totalBeforeCharge,deliveryCharge)
+    console.log("totalBe", totalBe);
     if (totalBe !== total)
       return next(new Error("401 - Total price is not correct"));
     const order = await Order.create({

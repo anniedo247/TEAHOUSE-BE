@@ -8,7 +8,6 @@ const orderSchema = Schema(
       {
         name: { type: String, required: true, trim: true },
         description: { type: String, required: true },
-        instruction: String,
         size: { type: String, enum: ["small", "medium", "large"] },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true },
@@ -17,6 +16,7 @@ const orderSchema = Schema(
     ],
     shippingAddress: {
       address: { type: String, required: true },
+      ward: { type: String, required: true },
       district: { type: String, required: true },
       city: { type: String, required: true },
     },

@@ -53,14 +53,13 @@ productController.getAllProducts = async (req, res, next) => {
     let { page, limit, sortBy, ...filter } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
+    console.log('filter',filter)
+    //const totalProducts = await Product.count({ ...filter, isDeleted: false });
+    let totalProducts
 
-    const totalProducts = await Product.count({ ...filter, isDeleted: false });
-
-    const totalPages = Math.ceil(totalProducts / limit);
+    
     const offset = limit * (page - 1);
     
-    console.log("category", req.query.category);
-
     let categoryArray = [];
 
     if (req.query.category) {
@@ -77,6 +76,8 @@ productController.getAllProducts = async (req, res, next) => {
 
     let products;
     if (categoryArray.length === 0) {
+
+      totalProducts = await Product.find().countDocuments()
       products = await Product.aggregate([
         {
           $match: {
@@ -105,6 +106,7 @@ productController.getAllProducts = async (req, res, next) => {
         { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
       ]);
     } else {
+      totalProducts = await Product.find({categories: { $all: categoryArray } }).countDocuments()
       products = await Product.aggregate([
         {
           $match: {
@@ -136,6 +138,9 @@ productController.getAllProducts = async (req, res, next) => {
         { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
       ]);
     }
+    console.log(totalProducts)
+    const totalPages = Math.ceil(totalProducts / limit);
+
     utilsHelper.sendResponse(
       res,
       200,
@@ -211,7 +216,7 @@ productController.getSingleProduct = async (req, res, next) => {
     ]);
     const productData = await Product.findById(productId).populate("categories").populate({
       path: "reviews",
-      populate: { path: "user", select: "name -_id" },
+      populate: { path: "user", select: "name avatarUrl -_id" },
     });
     utilsHelper.sendResponse(
       res,
