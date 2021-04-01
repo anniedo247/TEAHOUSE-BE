@@ -53,13 +53,12 @@ productController.getAllProducts = async (req, res, next) => {
     let { page, limit, sortBy, ...filter } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
-    console.log('filter',filter)
+    console.log("filter", filter);
     //const totalProducts = await Product.count({ ...filter, isDeleted: false });
-    let totalProducts
+    let totalProducts;
 
-    
     const offset = limit * (page - 1);
-    
+
     let categoryArray = [];
 
     if (req.query.category) {
@@ -76,8 +75,7 @@ productController.getAllProducts = async (req, res, next) => {
 
     let products;
     if (categoryArray.length === 0) {
-
-      totalProducts = await Product.find().countDocuments()
+      totalProducts = await Product.find().countDocuments();
       products = await Product.aggregate([
         {
           $match: {
@@ -106,7 +104,10 @@ productController.getAllProducts = async (req, res, next) => {
         { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
       ]);
     } else {
-      totalProducts = await Product.find({categories: { $all: categoryArray } }).countDocuments()
+      totalProducts = await Product.find({
+        name: new RegExp(req.query.search, "i"),
+        categories: { $all: categoryArray },
+      }).countDocuments();
       products = await Product.aggregate([
         {
           $match: {
@@ -138,7 +139,7 @@ productController.getAllProducts = async (req, res, next) => {
         { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
       ]);
     }
-    console.log(totalProducts)
+    console.log(totalProducts);
     const totalPages = Math.ceil(totalProducts / limit);
 
     utilsHelper.sendResponse(
@@ -175,7 +176,7 @@ productController.updateProduct = async (req, res, next) => {
     }
     if (product) {
       (product.name = name || product.name),
-      (product.description = description || product.description);
+        (product.description = description || product.description);
       product.ingredients = ingredients || product.ingredients;
       product.instructions = instructions || product.instructions;
       product.weight = weight || product.weight;
@@ -200,7 +201,7 @@ productController.updateProduct = async (req, res, next) => {
 productController.getSingleProduct = async (req, res, next) => {
   try {
     const productId = req.params.id;
-    
+
     console.log("productId", productId);
     const product = await Product.aggregate([
       { $match: { _id: mongoose.Types.ObjectId(productId) } },
@@ -214,10 +215,12 @@ productController.getSingleProduct = async (req, res, next) => {
       },
       { $addFields: { avgRating: { $avg: "$reviews.rating" } } },
     ]);
-    const productData = await Product.findById(productId).populate("categories").populate({
-      path: "reviews",
-      populate: { path: "user", select: "name avatarUrl -_id" },
-    });
+    const productData = await Product.findById(productId)
+      .populate("categories")
+      .populate({
+        path: "reviews",
+        populate: { path: "user", select: "name avatarUrl -_id" },
+      });
     utilsHelper.sendResponse(
       res,
       200,
@@ -316,7 +319,7 @@ productController.getAllFavoriteProducts = async (req, res, next) => {
     //let products = await Product.find({isFavorite: true});
 
     const products = await Product.aggregate([
-      {$match:{isFavorite:true}},
+      { $match: { isFavorite: true } },
       { $skip: offset },
       { $limit: limit },
       {
