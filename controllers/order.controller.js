@@ -18,15 +18,15 @@ orderController.createOrder = async (req, res, next) => {
       return next(new Error("No products added."));
     }
     const productList = [];
-    console.log("heheh",products);
+    console.log("heheh", products);
     let totalBeforeCharge = 0;
     let totalBe = 0;
-    for (let i=0;i< products.length;i++) {
+    for (let i = 0; i < products.length; i++) {
       // if (products[i].quantity < 1) return next(new Error("401 - Invalid quantity."));
-      console.log("iddd",products[i].id)
+      console.log("iddd", products[i].id);
       let product = await Product.findById(products[i].id).lean();
 
-      console.log("product",product)
+      console.log("product", product);
       if (product) {
         product.quantity = products[i].quantity;
         if (products[i].size) {
@@ -49,7 +49,7 @@ orderController.createOrder = async (req, res, next) => {
       }
     }
     totalBe = totalBeforeCharge + deliveryCharge;
-    console.log("before",totalBeforeCharge,deliveryCharge)
+    console.log("before", totalBeforeCharge, deliveryCharge);
     console.log("totalBe", totalBe);
     if (totalBe !== total)
       return next(new Error("401 - Total price is not correct"));
@@ -70,7 +70,7 @@ orderController.createOrder = async (req, res, next) => {
 orderController.getDetailOrder = async (req, res, next) => {
   try {
     const orderId = req.params.id;
-    const order = await Order.findOne({ _id: orderId });
+    const order = await Order.findOne({ _id: orderId }).populate("userId");
     if (!order) return next(new Error("401- Order not found"));
     utilsHelper.sendResponse(
       res,
@@ -102,20 +102,32 @@ orderController.updateOrderToPaid = async (req, res, next) => {
     next(error);
   }
 };
-//Update Order to delivered
+//Update Order to delivered/paid
 orderController.updateOrderToDelivered = async (req, res, next) => {
   try {
     const orderId = req.params.id;
 
     const order = await Order.findByIdAndUpdate(
       { _id: orderId },
-      { isDelivered: true, deliveredAt: Date.now() },
+      {
+        isDelivered: true,
+        deliveredAt: Date.now(),
+        isPaid: true,
+        paidAt: Date.now(),
+      },
       { new: true }
     );
     if (!order) {
       return next(new Error("order not found or User not authorized"));
     }
-    utilsHelper.sendResponse(res, 200, true, { order }, null, "Order is delivered");
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { order },
+      null,
+      "Order is delivered and paid"
+    );
   } catch (error) {
     next(error);
   }
@@ -148,12 +160,13 @@ orderController.getMyOrders = async (req, res, next) => {
 
     const totalPages = Math.ceil(totalOrders / limit);
     const offset = limit * (page - 1);
-    
+
     const userId = req.userId;
-    const orders = await Order.find({user: userId})
+    console.log("userId", req.userId);
+    const orders = await Order.find({ userId: userId })
       .skip(offset)
-      .limit(limit)
-      
+      .limit(limit);
+
     utilsHelper.sendResponse(
       res,
       200,
@@ -162,12 +175,10 @@ orderController.getMyOrders = async (req, res, next) => {
       null,
       `Get all ${orders.length} orders success`
     );
-
-  }catch (error) {
+  } catch (error) {
     next(error);
-
   }
-}
+};
 orderController.getAllOrders = async (req, res, next) => {
   try {
     let { page, limit, sortBy, ...filter } = req.query;

@@ -29,6 +29,12 @@ router.get("/me",authMiddlewares.loginRequired,userController.getCurrentUser)
  * @access Login Required
  */
 router.put("/me",authMiddlewares.loginRequired,userController.updateProfile)
+/**
+ * @route GET api/users/:id
+ * @description User can update profile
+ * @access Login Required
+ */
+router.get("/:id",authMiddlewares.loginRequired,authMiddlewares.adminRequired,userController.getAllUsersInfo)
 
 /**
  * @route GET api/users/:id/order

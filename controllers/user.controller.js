@@ -49,6 +49,24 @@ userController.getCurrentUser = async (req, res, next) => {
     next(error);
   }
 };
+/* Admin can get all users info */
+userController.getAllUsersInfo = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return next(new Error("401 - User not found"));
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { user },
+      null,
+      "Get user success"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
 //Update current user profile
 userController.updateProfile = async (req, res, next) => {
   try {
