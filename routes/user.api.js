@@ -1,47 +1,72 @@
-var express = require('express');
-const authController = require('../controllers/auth.controller');
+var express = require("express");
+const authController = require("../controllers/auth.controller");
 var router = express.Router();
-const userController = require("../controllers/user.controller")
-const authMiddlewares = require("../middlewares/authentication")
+const userController = require("../controllers/user.controller");
+const authMiddlewares = require("../middlewares/authentication");
+/**
+ * @route PUT api/users/me/favorite
+ * @description User can add/remove favorite
+ * @access Login Required
+ */
+router.put(
+  "/me/favorite",
+  authMiddlewares.loginRequired,
+  userController.updateFavorite
+);
 
 /**
  * @route POST api/users/
  * @description User can register account
  * @access Public
  */
-router.post("/",userController.register)
+router.post("/", userController.register);
 /**
  * @route GET api/users
  * @description Admin can get all users
  * @access Admin required
  */
-router.get("/",authMiddlewares.loginRequired,authMiddlewares.adminRequired,userController.getAllUsers)
+router.get(
+  "/",
+  authMiddlewares.loginRequired,
+  authMiddlewares.adminRequired,
+  userController.getAllUsers
+);
 
 /**
  * @route GET api/users/me
  * @description Return current user info
  * @access Login required
  */
-router.get("/me",authMiddlewares.loginRequired,userController.getCurrentUser)
+router.get("/me", authMiddlewares.loginRequired, userController.getCurrentUser);
 /**
  * @route PUT api/users/me
  * @description User can update profile
  * @access Login Required
  */
-router.put("/me",authMiddlewares.loginRequired,userController.updateProfile)
+router.put("/me", authMiddlewares.loginRequired, userController.updateProfile);
+
 /**
  * @route GET api/users/:id
  * @description User can update profile
  * @access Login Required
  */
-router.get("/:id",authMiddlewares.loginRequired,authMiddlewares.adminRequired,userController.getAllUsersInfo)
+router.get(
+  "/:id",
+  authMiddlewares.loginRequired,
+  authMiddlewares.adminRequired,
+  userController.getAllUsersInfo
+);
 
 /**
  * @route GET api/users/:id/order
  * @description Return list orders of current user
  * @access Login Required or Admin authorized
  */
-router.get("/:id/order",authController.loginWithEmail,userController.getCurrentUserOrder)
+router.get(
+  "/:id/order",
+  authController.loginWithEmail,
+  userController.getCurrentUserOrder
+);
 /**
  * @route Put api/users/:id/payment
  * @description User can make payment

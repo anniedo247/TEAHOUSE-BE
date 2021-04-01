@@ -3,12 +3,7 @@ const router = express.Router();
 const productController = require("../controllers/product.controller");
 const authMiddlewares = require("../middlewares/authentication");
 
-/**
- * @route GET api/products/favorite
- * @description get all favorite product 
- * @access Login required
- */
-router.get("/favorite",authMiddlewares.loginRequired,productController.getAllFavoriteProducts)
+
 /**
  * @route POST api/products/add
  * @description Admin can add product
@@ -55,17 +50,5 @@ router.delete(
   authMiddlewares.adminRequired,
   productController.deleteProduct
 );
-/**
- * @route Put api/products/:id/favorite
- * @description add a product to favorite
- * @access Login required
- */
-router.put("/:id/favorite",authMiddlewares.loginRequired,productController.addFavoriteProduct)
-/**
- * @route Put api/products/:id/favorite
- * @description add a product to favorite
- * @access Login required
- */
-router.delete("/:id/removefavorite",authMiddlewares.loginRequired,productController.removeFavoriteProduct)
 
 module.exports = router;

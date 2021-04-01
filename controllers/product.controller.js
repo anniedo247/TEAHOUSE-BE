@@ -253,57 +253,8 @@ productController.deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
-//add a product to favorite
-productController.addFavoriteProduct = async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    const product = await Product.findByIdAndUpdate(
-      { _id: productId },
-      { isFavorite: true },
-      { new: true }
-    );
-    if (!product) {
-      return next(new Error("Product not found or User not authorized"));
-    }
-    if (product.isFavorite === true) {
-      return next(new Error("Product already added to favorite"));
-    }
-    utilsHelper.sendResponse(
-      res,
-      200,
-      true,
-      { product },
-      null,
-      "Product added to favorite success"
-    );
-  } catch (error) {
-    next(error);
-  }
-};
-//remove a product to favorite
-productController.removeFavoriteProduct = async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    const product = await Product.findByIdAndUpdate(
-      { _id: productId },
-      { isFavorite: false },
-      { new: true }
-    );
-    if (!product) {
-      return next(new Error("Product not found or User not authorized"));
-    }
-    utilsHelper.sendResponse(
-      res,
-      200,
-      true,
-      { product },
-      null,
-      "Product removed from favorite success"
-    );
-  } catch (error) {
-    next(error);
-  }
-};
+
+
 // get all favorite products
 productController.getAllFavoriteProducts = async (req, res, next) => {
   try {

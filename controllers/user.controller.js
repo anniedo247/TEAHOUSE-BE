@@ -71,17 +71,17 @@ userController.getAllUsersInfo = async (req, res, next) => {
 userController.updateProfile = async (req, res, next) => {
   try {
     const userId = req.userId;
-    let { name, avatarUrl} = req.body;
+    let { name, avatarUrl } = req.body;
 
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
-      return next(new Error("User not found"))
+      return next(new Error("User not found"));
     }
-    if(user){
+    if (user) {
       user.name = name || user.name;
-      user.avatarUrl = avatarUrl || user.avatarUrl
+      user.avatarUrl = avatarUrl || user.avatarUrl;
     }
-    const updatedUser = await user.save()
+    const updatedUser = await user.save();
     utilsHelper.sendResponse(
       res,
       200,
@@ -153,10 +153,8 @@ userController.getAllUsers = async (req, res, next) => {
     const totalPages = Math.ceil(totalUsers / limit);
     const offset = limit * (page - 1);
 
-    const users = await User.find()
-      .skip(offset)
-      .limit(limit)
-      
+    const users = await User.find().skip(offset).limit(limit);
+
     utilsHelper.sendResponse(
       res,
       200,
@@ -164,6 +162,57 @@ userController.getAllUsers = async (req, res, next) => {
       { users, totalPages },
       null,
       `Get all ${users.length} users success`
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+userController.updateFavorite = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const productId = req.body.productId;
+    console.log("idd",productId)
+    let user = await User.findById(userId).lean();
+    console.log("user",user)
+    console.log("fafa",user.favorite)
+
+    if (!user) return next(new Error("401 - User not found"));
+    let newFavorite=[];
+
+    if (user) {
+      let existProductId = false;
+      for (let i = 0; i < user.favorite.length; i++) {
+        console.log("runnig",productId)
+        console.log("ra",user.favorite[i])
+
+        if (user.favorite[i] == productId) {
+          console.log("run")
+
+          existProductId= true
+          console.log("exist",existProductId)
+          newFavorite = user.favorite.filter((item) => item != productId);
+          console.log("new",newFavorite)
+         
+        }
+      }
+      if(!existProductId) {
+        newFavorite = [...user.favorite, productId];
+      }
+    }
+    console.log("ffff",newFavorite)
+    user = await User.findByIdAndUpdate(
+      userId,
+      { favorite: newFavorite },
+      { new: true }
+    );
+   console.log("usss",user)
+    utilsHelper.sendResponse(
+      res,
+      200,
+      true,
+      { user },
+      null,
+      "Get user success"
     );
   } catch (error) {
     next(error);

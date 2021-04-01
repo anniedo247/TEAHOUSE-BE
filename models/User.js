@@ -10,6 +10,7 @@ const userSchema = Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     avatarUrl:String,
+    favorite:[{ type: Schema.Types.ObjectId, ref: "Product" }],
     balance: { type: Number, default: 0 },
     isDeleted: { type: Boolean, default: false },
   },
