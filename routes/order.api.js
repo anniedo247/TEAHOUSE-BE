@@ -76,5 +76,27 @@ router.get(
   authMiddlewares.adminRequired,
   orderController.getAllOrders
 );
+/**
+ * @route GET api/orders/online
+ * @description Admin can get all orders online
+ * @access Admin required
+ */
+router.get(
+  "/online",
+  authMiddlewares.loginRequired,
+  authMiddlewares.adminRequired,
+  orderController.getAllOrdersOnline
+);
+/**
+ * @route GET api/orders/date
+ * @description Admin can get all orders online
+ * @access Admin required
+ */
+router.get(
+  "/date",
+  authMiddlewares.loginRequired,
+  authMiddlewares.adminRequired,
+  orderController.getAllOrdersByDate
+);
 
 module.exports = router;
