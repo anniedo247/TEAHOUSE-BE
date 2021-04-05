@@ -185,17 +185,22 @@ orderController.getAllOrders = async (req, res, next) => {
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
-    const totalOrders = await Order.count({ ...filter, isDeleted: false });
+    let totalOrders = await Order.count({ ...filter, isDeleted: false });
 
-    const totalPages = Math.ceil(totalOrders / limit);
+    let totalPages = Math.ceil(totalOrders / limit);
     const offset = limit * (page - 1);
 
     let orders = await Order.find({})
       .skip(offset)
       .limit(limit)
       .populate("userId");
+      console.log("name",req.query.name)
+      if(req.query.name){
+        orders = orders.filter((order)=> order.userId.name === req.query.name)
+        totalOrders = orders.length
+        totalPages = Math.ceil(totalOrders / limit)
 
-      orders = orders.filter((order)=> order.userId.name === req.query.name)
+      }
      
     utilsHelper.sendResponse(
       res,
