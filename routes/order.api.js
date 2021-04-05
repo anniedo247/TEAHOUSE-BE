@@ -61,7 +61,6 @@ router.put(
 router.delete(
   "/:id",
   authMiddlewares.loginRequired,
-  authMiddlewares.adminRequired,
   orderController.deleteOrder
 );
 
