@@ -35,7 +35,7 @@ userController.register = async (req, res, next) => {
 userController.getCurrentUser = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate("favorite");
     if (!user) return next(new Error("401 - User not found"));
     utilsHelper.sendResponse(
       res,
