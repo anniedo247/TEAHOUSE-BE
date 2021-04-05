@@ -166,7 +166,7 @@ orderController.getMyOrders = async (req, res, next) => {
     const orders = await Order.find({ userId: userId })
       .skip(offset)
       .limit(limit)
-      .sort({"createdAt":-1})
+      .sort({ createdAt: -1 });
 
     utilsHelper.sendResponse(
       res,
@@ -182,27 +182,24 @@ orderController.getMyOrders = async (req, res, next) => {
 };
 orderController.getAllOrders = async (req, res, next) => {
   try {
-    let { page, limit, sortBy,name,...filter } = req.query;
+    let { page, limit, sortBy, name, ...filter } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
     let totalOrders = await Order.count({ ...filter, isDeleted: false });
 
     let totalPages = Math.ceil(totalOrders / limit);
-    const offset = limit * (page - 1);
 
-    let orders = await Order.find({})
-      .skip(offset)
-      .limit(limit)
-      .populate("userId");
-      console.log("name",req.query.name)
-      if(req.query.name){
-        orders = orders.filter((order)=> order.userId.name === req.query.name)
-        totalOrders = orders.length
-        totalPages = Math.ceil(totalOrders / limit)
+    let orders = await Order.find({}).populate("userId");
+    console.log("name", req.query.name);
+    if (req.query.name) {
+      orders = orders.filter((order) => order.userId.name === req.query.name);
+      totalOrders = orders.length;
+      totalPages = Math.ceil(totalOrders / limit);
+      const offset = limit * (page - 1);
+      orders = orders.slice(offset, offset + limit);
+    }
 
-      }
-     
     utilsHelper.sendResponse(
       res,
       200,
@@ -217,22 +214,19 @@ orderController.getAllOrders = async (req, res, next) => {
 };
 orderController.getAllOrdersOnline = async (req, res, next) => {
   try {
-    let { page, limit, sortBy,name,...filter } = req.query;
+    let { page, limit, sortBy, name, ...filter } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
-    const totalOrders = await Order.count({ ...filter, isDeleted: false });
 
+    let orders = await Order.find({}).populate("userId");
+
+    orders = orders.filter((order) => order.userId.role !== "staff");
+    const totalOrders = orders.length;
     const totalPages = Math.ceil(totalOrders / limit);
     const offset = limit * (page - 1);
+    orders = orders.slice(offset, offset + limit);
 
-    let orders = await Order.find({})
-      .skip(offset)
-      .limit(limit)
-      .populate("userId");
-
-      orders = orders.filter((order)=> order.userId.role !== "staff")
-     
     utilsHelper.sendResponse(
       res,
       200,
@@ -248,7 +242,7 @@ orderController.getAllOrdersOnline = async (req, res, next) => {
 
 orderController.getAllOrdersByDate = async (req, res, next) => {
   try {
-    let { page, limit, sortBy,stateDate,endDate,...filter } = req.query;
+    let { page, limit, sortBy, stateDate, endDate, ...filter } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
@@ -257,11 +251,13 @@ orderController.getAllOrdersByDate = async (req, res, next) => {
     const totalPages = Math.ceil(totalOrders / limit);
     const offset = limit * (page - 1);
 
-    let orders = await Order.find({createdAt:{$gte:stateDate,$lte:endDate}})
+    let orders = await Order.find({
+      createdAt: { $gte: stateDate, $lte: endDate },
+    })
       .skip(offset)
       .limit(limit)
       .populate("userId");
-     
+
     utilsHelper.sendResponse(
       res,
       200,
@@ -274,6 +270,5 @@ orderController.getAllOrdersByDate = async (req, res, next) => {
     next(error);
   }
 };
-
 
 module.exports = orderController;
