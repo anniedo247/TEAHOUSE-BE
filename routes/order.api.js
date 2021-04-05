@@ -49,7 +49,6 @@ router.put(
 router.put(
   "/:id/delivery",
   authMiddlewares.loginRequired,
-  authMiddlewares.adminRequired,
   orderController.updateOrderToDelivered
 );
 
@@ -61,6 +60,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddlewares.loginRequired,
+  authMiddlewares.adminRequired,
   orderController.deleteOrder
 );
 
