@@ -165,7 +165,8 @@ orderController.getMyOrders = async (req, res, next) => {
     console.log("userId", req.userId);
     const orders = await Order.find({ userId: userId })
       .skip(offset)
-      .limit(limit);
+      .limit(limit)
+      .sort({"createdAt":-1})
 
     utilsHelper.sendResponse(
       res,
