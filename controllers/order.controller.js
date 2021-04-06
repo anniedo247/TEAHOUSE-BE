@@ -155,14 +155,15 @@ orderController.getMyOrders = async (req, res, next) => {
     let { page, limit, sortBy, ...filter } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
+    const userId = req.userId;
+    console.log("userId", req.userId);
 
-    const totalOrders = await Order.count({ ...filter, isDeleted: false });
-
+    //const totalOrders = await Order.count({ ...filter, isDeleted: false });
+    const totalOrders = await Order.find({userId:userId}).countDocuments()
     const totalPages = Math.ceil(totalOrders / limit);
     const offset = limit * (page - 1);
 
-    const userId = req.userId;
-    console.log("userId", req.userId);
+    
     const orders = await Order.find({ userId: userId })
       .skip(offset)
       .limit(limit)
