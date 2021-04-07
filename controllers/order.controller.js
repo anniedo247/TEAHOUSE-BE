@@ -220,7 +220,7 @@ orderController.getAllOrdersOnline = async (req, res, next) => {
     limit = parseInt(limit) || 10;
 
 
-    let orders = await Order.find({}).populate("userId");
+    let orders = await Order.find({}).sort({ createdAt: -1 }).populate("userId");
 
     orders = orders.filter((order) => order.userId.role !== "staff");
     const totalOrders = orders.length;
